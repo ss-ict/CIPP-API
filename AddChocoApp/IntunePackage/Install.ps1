@@ -14,6 +14,10 @@ param (
 
     [Parameter()]
     [switch]
+    $IgnoreChecksumErrors,
+
+    [Parameter()]
+    [switch]
     $Trace
 )
 
@@ -38,11 +42,21 @@ try {
         $CustomRepoString = if ($CustomRepo) { "--source $customrepo" } else { $null }
         if ($localprograms -like "*$Packagename*" ) {
             Write-Host "Upgrading $packagename"
-            & "$chocoPath" upgrade $Packagename $CustomRepoString
+            if ($IgnoreChecksumErrors) {
+                & "$chocoPath" upgrade $Packagename $CustomRepoString 
+            }
+            else {
+                & "$chocoPath" upgrade $Packagename  $CustomRepoString --ignore-checksums
+            }
         }
         else {
             Write-Host "Installing $packagename"
-            & "$chocoPath" install $Packagename -y $CustomRepoString
+            if ($IgnoreChecksumErrors) {
+                & "$chocoPath" install $Packagename -y $CustomRepoString --ignore-checksums
+            }
+            else {
+                & "$chocoPath" install $Packagename -y $CustomRepoString
+            }
         }
         Write-Host 'Completed.'
     }  
