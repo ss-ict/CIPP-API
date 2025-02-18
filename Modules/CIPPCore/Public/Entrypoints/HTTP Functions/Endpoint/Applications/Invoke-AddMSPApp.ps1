@@ -58,6 +58,10 @@ Function Invoke-AddMSPApp {
                 $installcommandline = "powershell.exe -executionpolicy bypass .\install.ps1 -Url $($InstallParams.ClientURL."$($tenant.customerId)")"
                 $UninstallCommandLine = 'powershell.exe -executionpolicy bypass .\uninstall.ps1'
             }
+            'vsa' {
+                $installcommandline = "powershell.exe -executionpolicy bypass .\install.ps1 -ComputerGroup $($InstallParams.ComputerGroup)"
+                $UninstallCommandLine = 'powershell.exe -executionpolicy bypass .\uninstall.ps1'
+            }
         }
         $intuneBody.installCommandLine = $installcommandline
         $intuneBody.UninstallCommandLine = $UninstallCommandLine
