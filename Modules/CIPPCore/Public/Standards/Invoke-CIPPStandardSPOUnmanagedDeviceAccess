@@ -1,0 +1,72 @@
+function Invoke-CIPPStandardSPOUnmanagedDeviceAccess {
+  <#
+    .FUNCTIONALITY
+        Internal
+    .COMPONENT
+        (APIName) SPOUnmanagedDeviceAccess
+    .SYNOPSIS
+        (Label) Set Unmanaged Device Access Level in OneDrive and SharePoint
+    .DESCRIPTION
+        (Helptext) Allows you to block or limit access from unmanaged devices accessing Sharepoint. Needs to be used in conjunction with Conditional Access rules.
+        (DocsDescription) Sets the access level for users accessing Sharepoint from an unmanaged device, when triggered by a Conditional Access rule with the 'Use application enforced restrictions' control.
+    .NOTES
+        CAT
+            SharePoint Standards
+        TAG
+            "highimpact"
+            "CIS"
+        ADDEDCOMPONENT
+            {"type":"select","multiple":false,"label":"Select Sharing Level","name":"standards.sharingCapability.Level","options":[{"label":"Users can share only with people in the organization. No external sharing is allowed.","value":"disabled"},{"label":"Users can share with new and existing guests. Guests must sign in or provide a verification code.","value":"externalUserSharingOnly"},{"label":"Users can share with anyone by using links that do not require sign-in.","value":"externalUserAndGuestSharing"},{"label":"Users can share with existing guests (those already in the directory of the organization).","value":"existingExternalUserSharingOnly"}]}
+        IMPACT
+            High Impact
+        POWERSHELLEQUIVALENT
+            Set-SPOTenant -ConditionalAccessPolicy AllowLimitedAccess
+        RECOMMENDEDBY
+            "CIS"
+        UPDATECOMMENTBLOCK
+            Run the Tools\Update-StandardsComments.ps1 script to update this comment block
+    .LINK
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/sharepoint-standards#high-impact
+    #>
+
+  param($Tenant, $Settings)
+  ##$Rerun -Type Standard -Tenant $Tenant -Settings $Settings 'SPOUnmanagedDeviceAccess'
+
+  $CurrentInfo = New-GraphGetRequest -Uri 'https://graph.microsoft.com/beta/admin/sharepoint/settings' -tenantid $Tenant -AsApp $true
+
+  if ($Settings.report -eq $true) {
+    Add-CIPPBPAField -FieldName 'SPOUnmanagedDeviceAccess' -FieldValue $CurrentInfo.conditionalAccessPolicy -StoreAs string -Tenant $tenant
+  }
+
+  # Input validation
+  if (([string]::IsNullOrWhiteSpace($Settings.Level -or $Settings.Level -eq 'Select a value') -and ($Settings.remediate -eq $true -or $Settings.alert -eq $true))) {
+    Write-LogMessage -API 'Standards' -tenant $tenant -message 'SPOUnmanagedDeviceAccess: Invalid accessLevel parameter set' -sev Error
+    Return
+  }
+
+  If ($Settings.remediate -eq $true) {
+
+    if ($CurrentInfo.conditionalAccessPolicy -eq $Settings.Level) {
+      Write-Host "Unmanaged device access level is already set to $($Settings.Level)"
+      Write-LogMessage -API 'Standards' -tenant $tenant -message "Unmanaged device access level is already set to $($Settings.Level)" -sev Info
+    } else {
+      Write-Host "Setting unmanaged device access level to $($Settings.Level) from $($CurrentInfo.sharingCapability)"
+      try {
+        $null = New-GraphPostRequest -tenantid $tenant -Uri 'https://graph.microsoft.com/beta/admin/sharepoint/settings' -AsApp $true -Type patch -Body "{`"conditionalAccessPolicy`":`"$($Settings.Level)`"}" -ContentType 'application/json'
+        Write-LogMessage -API 'Standards' -tenant $tenant -message "Set sharing level to $($Settings.Level) from $($CurrentInfo.conditionalAccessPolicy)" -sev Info
+      } catch {
+        $ErrorMessage = Get-NormalizedError -Message $_.Exception.Message
+        Write-LogMessage -API 'Standards' -tenant $tenant -message "Failed to set unmanaged device access level to $($Settings.Level): $ErrorMessage" -sev Error
+      }
+    }
+  }
+
+  if ($Settings.alert -eq $true) {
+
+    if ($CurrentInfo.conditionalAccessPolicy -eq $Settings.Level) {
+      Write-LogMessage -API 'Standards' -tenant $tenant -message "Unmanged device access level is set to $($Settings.Level)" -sev Info
+    } else {
+      Write-LogMessage -API 'Standards' -tenant $tenant -message "Unmanaged device access level is not set to $($Settings.Level)" -sev Alert
+    }
+  }
+}
