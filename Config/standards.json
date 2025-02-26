@@ -2378,6 +2378,40 @@
     "recommendedBy": []
   },
   {
+    "name": "standards.ControlUnmanagedDeviceAccess",
+    "cat": "SharePoint Standards",
+    "tag": [],
+    "helpText": "Allows you to block or limit access from unmanaged devices accessing Sharepoint. Needs to be used in conjunction with Conditional Access rules.",
+    "docsDescription": "Sets the access level for users accessing Sharepoint from an unmanaged device, when triggered by a Conditional Access rule with the 'Use application enforced restrictions' control.",
+    "addedComponent": [
+      {
+        "type": "select",
+        "multiple": false,
+        "name": "standards.ControlUnmanagedDeviceAccess.level",
+        "label": "Access Level (default is Allow Limited Access)",
+        "options": [
+          {
+            "label": "Allow Limited Access",
+            "value": "AllowLimitedAccess"
+          },
+          {
+            "label": "Block Access",
+            "value": "BlockAccess"
+          },
+          {
+            "label": "Allow Full Access (Not Recommended)",
+            "value": "AllowFullAccess"
+          }
+        ]
+      }
+    ],
+    "label": "Set Unmanaged Device Access Level",
+    "impact": "Medium Impact",
+    "impactColour": "info",
+    "powershellEquivalent": "Set-SPOTenant -ConditionalAccessPolicy AllowLimitedAccess",
+    "recommendedBy": []
+  },
+  {
     "name": "standards.TenantDefaultTimezone",
     "cat": "SharePoint Standards",
     "tag": ["lowimpact"],
