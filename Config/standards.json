@@ -2378,16 +2378,16 @@
     "recommendedBy": []
   },
   {
-    "name": "standards.SPOUnmanagedDeviceAccess",
+    "name": "standards.ControlUnmanagedDeviceAccess",
     "cat": "SharePoint Standards",
-    "tag": [highimpact],
+    "tag": [],
     "helpText": "Allows you to block or limit access from unmanaged devices accessing Sharepoint. Needs to be used in conjunction with Conditional Access rules.",
     "docsDescription": "Sets the access level for users accessing Sharepoint from an unmanaged device, when triggered by a Conditional Access rule with the 'Use application enforced restrictions' control.",
     "addedComponent": [
       {
         "type": "select",
         "multiple": false,
-        "name": "standards.SPOUnmanagedDeviceAccess.level",
+        "name": "standards.ControlUnmanagedDeviceAccess.level",
         "label": "Access Level (default is Allow Limited Access)",
         "options": [
           {
@@ -2406,8 +2406,8 @@
       }
     ],
     "label": "Set Unmanaged Device Access Level",
-    "impact": "High Impact",
-    "impactColour": "danger",
+    "impact": "Medium Impact",
+    "impactColour": "info",
     "powershellEquivalent": "Set-SPOTenant -ConditionalAccessPolicy AllowLimitedAccess",
     "recommendedBy": []
   },
