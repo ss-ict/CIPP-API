@@ -1,11 +1,11 @@
-function Invoke-CIPPStandardcalDefault {
+function Invoke-CIPPStandardroomCalDefault {
     <#
     .FUNCTIONALITY
         Internal
     .COMPONENT
-        (APIName) calDefault
+        (APIName) roomCalDefault
     .SYNOPSIS
-        (Label) Set Sharing Level for Default calendar
+        (Label) Set Sharing Level for Room calendars
     .DESCRIPTION
         (Helptext) Sets the default sharing level for the default calendar, for all users
         (DocsDescription) Sets the default sharing level for the default calendar for all users in the tenant. You can read about the different sharing levels [here.](https://learn.microsoft.com/en-us/powershell/module/exchange/set-mailboxfolderpermission?view=exchange-ps#-accessrights)
@@ -40,13 +40,13 @@ function Invoke-CIPPStandardcalDefault {
     }
 
     If ($Settings.remediate -eq $true) {
-        $Mailboxes = New-ExoRequest -tenantid $Tenant -cmdlet 'Get-Mailbox' | Where-Object -FilterScript { $_.RecipientTypeDetails -eq 'UserMailbox' } | Sort-Object UserPrincipalName
+        $Mailboxes = New-ExoRequest -tenantid $Tenant -cmdlet 'Get-Mailbox' | Where-Object -FilterScript { $_.RecipientTypeDetails -eq 'RoomMailbox' -or $_.RecipientTypeDetails -eq 'EquipmentMailbox' } Sort-Object UserPrincipalName
         $TotalMailboxes = $Mailboxes.Count
         Write-LogMessage -API 'Standards' -tenant $Tenant -message "Started setting default calendar permissions for $($TotalMailboxes) mailboxes." -sev Info
 
         # Retrieve the last run status
         $LastRunTable = Get-CIPPTable -Table StandardsLastRun
-        $Filter = "RowKey eq 'calDefaults' and PartitionKey eq '{0}'" -f $tenant
+        $Filter = "RowKey eq 'roomCalDefaults' and PartitionKey eq '{0}'" -f $tenant
         $LastRun = Get-CIPPAzDataTableEntity @LastRunTable -Filter $Filter
 
         $startIndex = 0
@@ -57,9 +57,9 @@ function Invoke-CIPPStandardcalDefault {
         $SuccessCounter = if ($startIndex -eq 0) { 0 } else { [int64]$LastRun.currentSuccessCount }
         $processedMailboxes = $startIndex
         $Mailboxes = $Mailboxes[$startIndex..($TotalMailboxes - 1)]
-        Write-Host "CalDefaults Starting at index $startIndex"
-        Write-Host "CalDefaults success counter starting at $SuccessCounter"
-        Write-Host "CalDefaults Processing $($Mailboxes.Count) mailboxes"
+        Write-Host "RoomCalDefaults Starting at index $startIndex"
+        Write-Host "RoomCalDefaults success counter starting at $SuccessCounter"
+        Write-Host "RoomCalDefaults Processing $($Mailboxes.Count) mailboxes"
         $Mailboxes | ForEach-Object {
             $Mailbox = $_
             try {
@@ -82,7 +82,7 @@ function Invoke-CIPPStandardcalDefault {
                 $processedMailboxes++
                 if ($processedMailboxes % 25 -eq 0) {
                     $LastRun = @{
-                        RowKey              = 'calDefaults'
+                        RowKey              = 'roomCalDefaults'
                         PartitionKey        = $Tenant
                         totalMailboxes      = $TotalMailboxes
                         processedMailboxes  = $processedMailboxes
@@ -94,7 +94,7 @@ function Invoke-CIPPStandardcalDefault {
             }
 
             $LastRun = @{
-                RowKey              = 'calDefaults'
+                RowKey              = 'roomCalDefaults'
                 PartitionKey        = $Tenant
                 totalMailboxes      = $TotalMailboxes
                 processedMailboxes  = $processedMailboxes
