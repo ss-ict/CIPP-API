@@ -11,14 +11,14 @@ function New-passwordString {
     $PasswordType = (Get-CIPPAzDataTableEntity @SettingsTable).passwordType
     if ($PasswordType -eq 'Correct-Battery-Horse') {
         $Words = Get-Content .\words.txt
-        (((Get-Random -InputObject $words -Count 4) + (Get-Random -Maximum 100)) -join '-') + ('%&*#£'.ToCharArray() | Get-Random)    
+        $Script:Password = (((Get-Random -InputObject $words -Count 4) + (Get-Random -Maximum 100)) -join '-') + ('%&*#£'.ToCharArray() | Get-Random)
     } else {
         # Generate a complex password with a maximum of 100 tries
         $maxTries = 100
         $tryCount = 0
 
         do {
-            $Password = -join ('abcdefghkmnrstuvwxyzABCDEFGHKLMNPRSTUVWXYZ23456789$%&*#'.ToCharArray() | Get-Random -Count $count)
+            $Script:Password = -join ('abcdefghkmnrstuvwxyzABCDEFGHKLMNPRSTUVWXYZ23456789$%&*#'.ToCharArray() | Get-Random -Count $count)
 
             $containsUppercase = $Password -cmatch '[A-Z]'
             $containsLowercase = $Password -cmatch '[a-z]'
@@ -29,7 +29,6 @@ function New-passwordString {
 
             $tryCount++
         } while (!$isComplex -and ($tryCount -lt $maxTries))
-
-        $Password
     }
+    $Password
 }
