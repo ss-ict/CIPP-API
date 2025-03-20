@@ -5,7 +5,7 @@ function Invoke-CIPPStandardDisableBasicAuthSMTPCustom {
     .COMPONENT
         (APIName) DisableBasicAuthSMTP
     .SYNOPSIS
-        (Label) Disable SMTP Basic Authentication
+        (Label) Disable SMTP Basic Authentication (Custom)
     .DESCRIPTION
         (Helptext) Disables SMTP AUTH for the organization and all users, with ability to set exclusion group. 
         (DocsDescription) Disables SMTP basic authentication for the tenant and all users with it explicitly enabled, unless in defined exclusion group.
