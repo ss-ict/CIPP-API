@@ -27,18 +27,13 @@ Function Invoke-ListTeamsVoice {
             Write-Host "Getting page $skip"
             $data = (New-TeamsAPIGetRequest -uri "https://api.interfaces.records.teams.microsoft.com/Skype.TelephoneNumberMgmt/Tenants/$($Tenantid)/telephone-numbers?skip=$($skip)&locale=en-US&top=999" -tenantid $TenantFilter).TelephoneNumbers | ForEach-Object {
                 Write-Host 'Reached the loop'
-                $CompleteRequest = $_ | Select-Object *, @{Name = 'AssignedTo'; Expression = {
-                    $user = $users | Where-Object { $_.id -eq $_.AssignedTo.id }
-                    if ($user) { $user.displayName } else { "Unassigned" }
-                }}                
+                $CompleteRequest = $_               
                 if ($CompleteRequest.AcquisitionDate) {
                     $CompleteRequest.AcquisitionDate = ($CompleteRequest.AcquisitionDate -split 'T')[0]
                 } else {
                     $CompleteRequest | Add-Member -NotePropertyName 'AcquisitionDate' -NotePropertyValue 'Unknown' -Force
                 }
-                if (-not $CompleteRequest.AssignedTo) {
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
-                }
+                $CompleteRequest | Add-Member -NotePropertyName 'AssignedToID' -NotePropertyValue $_.AssignedTo.id
                 
                 $CompleteRequest
             }
