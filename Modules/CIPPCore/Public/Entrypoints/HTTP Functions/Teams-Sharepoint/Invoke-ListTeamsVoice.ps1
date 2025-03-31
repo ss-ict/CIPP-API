@@ -31,16 +31,16 @@ Function Invoke-ListTeamsVoice {
                     $user = $users | Where-Object { $_.id -eq $_.AssignedTo.id }
                     if ($user) { $user.displayName } else { "Unassigned" }
                 }}                
-            if ($CompleteRequest.AcquisitionDate) {
-                $CompleteRequest.AcquisitionDate = ($CompleteRequest.AcquisitionDate -split 'T')[0]
-            } else {
-                $CompleteRequest | Add-Member -NotePropertyName 'AcquisitionDate' -NotePropertyValue 'Unknown' -Force
-            }
-            if (-not $CompleteRequest.AssignedTo) {
-                $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
-            }
-            
-            $CompleteRequest
+                if ($CompleteRequest.AcquisitionDate) {
+                    $CompleteRequest.AcquisitionDate = ($CompleteRequest.AcquisitionDate -split 'T')[0]
+                } else {
+                    $CompleteRequest | Add-Member -NotePropertyName 'AcquisitionDate' -NotePropertyValue 'Unknown' -Force
+                }
+                if (-not $CompleteRequest.AssignedTo) {
+                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
+                }
+                
+                $CompleteRequest
             }
             Write-Host 'Finished the loop'
             $skip = $skip + 999
