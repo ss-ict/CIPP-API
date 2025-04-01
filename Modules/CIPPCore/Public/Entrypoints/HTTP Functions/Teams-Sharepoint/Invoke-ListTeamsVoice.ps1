@@ -32,9 +32,7 @@ Function Invoke-ListTeamsVoice {
                     $CompleteRequest.AcquisitionDate = ($CompleteRequest.AcquisitionDate -split 'T')[0]
                 } else {
                     $CompleteRequest | Add-Member -NotePropertyName 'AcquisitionDate' -NotePropertyValue 'Unknown' -Force
-                }
-                $CompleteRequest | Add-Member -NotePropertyName 'AssignedToID' -NotePropertyValue $_.AssignedTo.id
-                
+                }                
                 $CompleteRequest
             }
             Write-Host 'Finished the loop'
