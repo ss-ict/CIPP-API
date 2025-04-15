@@ -30,10 +30,11 @@ Function Invoke-ListTeamsVoice {
 
                 # Handle AssignedTo property
                 if ($_.TargetType -EQ "User" -and $_.TargetId) {
-                    $MatchedUser = $Users | Where-Object { $_.id -eq $_.TargetId }
+                    $CurrentTarget = $_.TargetId
+                    $MatchedUser = $Users | Where-Object { $_.id -EQ $CurrentTarget }
                     $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue $MatchedUser.userPrincipalName -Force
                 }
-                if ($CompleteRequest.AssignedTo -eq $null) {
+                if ($CompleteRequest.AssignedTo -EQ $null) {
                     $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
                 }
 
