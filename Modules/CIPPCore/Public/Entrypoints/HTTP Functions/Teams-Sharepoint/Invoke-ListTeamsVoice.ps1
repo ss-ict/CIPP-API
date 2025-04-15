@@ -33,6 +33,10 @@ Function Invoke-ListTeamsVoice {
                     $CurrentTarget = $_.TargetId
                     $MatchedUser = $Users | Where-Object { $_.id -EQ $CurrentTarget }
                     $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue $MatchedUser.userPrincipalName -Force
+                } elseif ($_.TargetType -EQ "ResourceAccount" -and $_.TargetId) {
+                    $CurrentTarget = $_.TargetId
+                    $MatchedResource = $Users | Where-Object { $_.id -EQ $CurrentTarget }
+                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue $MatchedResource.displayName -Force
                 }
                 if ($CompleteRequest.AssignedTo -EQ $null) {
                     $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
