@@ -22,20 +22,20 @@ Function Invoke-ListTeamsVoice {
         $Skip = 0
         $GraphRequest = do {
             Write-Host "Getting page $Skip"
-            $data = (New-TeamsAPIGetRequest -uri "https://api.interfaces.records.teams.microsoft.com/Skype.TelephoneNumberMgmt/Tenants/$($TenantId)/telephone-numbers?skip=$($Skip)&locale=en-US&top=999" -tenantid $TenantId).TelephoneNumbers | ForEach-Object {
+            $data = (New-TeamsAPIGetRequest -uri "https://api.interfaces.records.teams.microsoft.com/Skype.TelephoneNumberMgmt/Tenants/$($TenantId)/telephone-numbers?skip=$($Skip)&locale=en-US&top=999" -tenantid $TenantId) | ForEach-Object {
                 Write-Host 'Reached the loop'
 
                 # Create the base object
                 $CompleteRequest = $_ | Select-Object *
 
                 # Handle AssignedTo property
-                <#if ($_.AssignedTo -and $_.AssignedTo.id) {
+                if ($_.AssignedTo -and $_.AssignedTo.id) {
                     $MatchedUser = $Users | Where-Object { $_.id -eq $_.AssignedTo.id }
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue ($MatchedUser.userPrincipalName -or 'Unassigned') -Force
+                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo2' -NotePropertyValue ($MatchedUser.userPrincipalName -or 'Unassigned') -Force
                 } else {
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
+                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo2' -NotePropertyValue 'Unassigned' -Force
                 }
-                #>
+
 
                 # Handle AcquisitionDate property
                 if ($CompleteRequest.AcquisitionDate) {
