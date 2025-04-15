@@ -31,11 +31,11 @@ Function Invoke-ListTeamsVoice {
                 # Handle AssignedTo property
                 if ($_.TargetType -EQ "User" -and $_.TargetId) {
                     $MatchedUser = $Users | Where-Object { $_.id -eq $_.TargetId }
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue ($MatchedUser.userPrincipalName -or 'Unassigned') -Force
-                } else {
+                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue $MatchedUser.userPrincipalName -Force
+                }
+                if ($CompleteRequest.AssignedTo -eq $null) {
                     $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
                 }
-
 
                 # Handle AcquisitionDate property
                 if ($CompleteRequest.AcquisitionDate) {
