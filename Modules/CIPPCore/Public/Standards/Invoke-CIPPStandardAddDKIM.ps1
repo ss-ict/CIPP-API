@@ -66,9 +66,13 @@ function Invoke-CIPPStandardAddDKIM {
         return
     }
 
+    $ExcludeDomains = @(
+                        '*.excl.cloud',
+                        '*.smtp.codetwo.online'
+                    )
 
-    $AllDomains = ($BatchResults | Where-Object { $_.DomainName }).DomainName
-    $DKIM = $BatchResults | Where-Object { $_.Domain } | Select-Object Domain, Enabled, Status
+$AllDomains = ($BatchResults | Where-Object { $_.DomainName -and -not ($ExcludeDomains | ForEach-Object { $_.DomainName -like $_ }) -contains $true }).DomainName
+$DKIM = $BatchResults | Where-Object { $_.DomainName -and -not ($ExcludeDomains | ForEach-Object { $_.DomainName -like $_ }) -contains $true } | Select-Object Domain, Enabled, Status
 
     # List of domains for each way to enable DKIM
     $NewDomains = $AllDomains | Where-Object { $DKIM.Domain -notcontains $_ }
