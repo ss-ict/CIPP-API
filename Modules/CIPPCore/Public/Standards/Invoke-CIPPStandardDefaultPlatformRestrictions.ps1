@@ -83,6 +83,7 @@ function Invoke-CIPPStandardDefaultPlatformRestrictions {
                 ContentType = 'application/json; charset=utf-8'
                 Body     = [PSCustomObject]@{
                     "@odata.type" = "#microsoft.graph.deviceEnrollmentPlatformRestrictionsConfiguration"
+                    description = "Default platform restrictions being enforced by CIPP standard."
                     androidForWorkRestriction = [PSCustomObject]@{
                         "@odata.type"                   = "microsoft.graph.deviceEnrollmentPlatformRestriction"
                         platformBlocked                 = $Settings.platformAndroidForWorkBlocked
