@@ -24,7 +24,7 @@ function Invoke-CIPPStandardEnablePronouns {
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
-        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/global-standards#low-impact
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards
     #>
 
     param ($Tenant, $Settings)
@@ -63,12 +63,13 @@ function Invoke-CIPPStandardEnablePronouns {
         if ($CurrentState.isEnabledInOrganization -eq $true) {
             Write-LogMessage -API 'Standards' -tenant $tenant -message 'Pronouns are enabled.' -sev Info
         } else {
-            Write-LogMessage -API 'Standards' -tenant $tenant -message 'Pronouns are not enabled.' -sev Alert
+            Write-StandardsAlert -message 'Pronouns are not enabled' -object $CurrentState -tenant $tenant -standardName 'EnablePronouns' -standardId $Settings.standardId
+            Write-LogMessage -API 'Standards' -tenant $tenant -message 'Pronouns are not enabled.' -sev Info
         }
     }
 
     if ($Settings.report -eq $true) {
-
+        Set-CIPPStandardsCompareField -FieldName 'standards.EnablePronouns' -FieldValue $CurrentState.isEnabledInOrganization -Tenant $tenant
         Add-CIPPBPAField -FieldName 'PronounsEnabled' -FieldValue $CurrentState.isEnabledInOrganization -StoreAs bool -Tenant $tenant
     }
 }

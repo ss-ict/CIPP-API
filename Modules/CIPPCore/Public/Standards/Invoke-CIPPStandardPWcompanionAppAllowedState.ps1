@@ -25,21 +25,19 @@ function Invoke-CIPPStandardPWcompanionAppAllowedState {
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
-        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/entra-aad-standards#low-impact
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards
     #>
 
     param($Tenant, $Settings)
-    ##$Rerun -Type Standard -Tenant $Tenant -Settings $Settings 'PWcompanionAppAllowedState'
 
-    $authenticatorFeaturesState = (New-GraphGetRequest -tenantid $Tenant -Uri 'https://graph.microsoft.com/beta/policies/authenticationMethodsPolicy/authenticationMethodConfigurations/microsoftAuthenticator' -Type GET)
+    $authenticatorFeaturesState = (New-GraphGetRequest -tenantid $Tenant -Uri 'https://graph.microsoft.com/beta/policies/authenticationMethodsPolicy/authenticationMethodConfigurations/microsoftAuthenticator')
     $authState = if ($authenticatorFeaturesState.featureSettings.companionAppAllowedState.state -eq 'enabled') { $true } else { $false }
 
-    if ($Settings.report -eq $true) {
-        Add-CIPPBPAField -FieldName 'companionAppAllowedState' -FieldValue $authState -StoreAs bool -Tenant $Tenant
-    }
+
 
     # Get state value using null-coalescing operator
-    $state = $Settings.state.value ?? $Settings.state
+    $state = $Settings.state.value ? $Settings.state.value : $settings.state
+    $authState = if ($authenticatorFeaturesState.featureSettings.companionAppAllowedState.state -eq $state) { $true } else { $false }
 
     # Input validation
     if (([string]::IsNullOrWhiteSpace($state) -or $state -eq 'Select a value') -and ($Settings.remediate -eq $true -or $Settings.alert -eq $true)) {
@@ -83,7 +81,18 @@ function Invoke-CIPPStandardPWcompanionAppAllowedState {
         if ($authState) {
             Write-LogMessage -API 'Standards' -tenant $Tenant -message 'companionAppAllowedState is enabled.' -sev Info
         } else {
-            Write-LogMessage -API 'Standards' -tenant $Tenant -message 'companionAppAllowedState is not enabled.' -sev Alert
+            Write-StandardsAlert -message 'companionAppAllowedState is not enabled' -object $authenticatorFeaturesState -tenant $Tenant -standardName 'PWcompanionAppAllowedState' -standardId $Settings.standardId
+            Write-LogMessage -API 'Standards' -tenant $Tenant -message 'companionAppAllowedState is not enabled.' -sev Info
         }
+    }
+
+    if ($Settings.report -eq $true) {
+        Add-CIPPBPAField -FieldName 'companionAppAllowedState' -FieldValue $authState -StoreAs bool -Tenant $Tenant
+        if ($authState) {
+            $FieldValue = $true
+        } else {
+            $FieldValue = $authenticatorFeaturesState.featureSettings.companionAppAllowedState
+        }
+        Set-CIPPStandardsCompareField -FieldName 'standards.PWcompanionAppAllowedState' -FieldValue $FieldValue -Tenant $Tenant
     }
 }

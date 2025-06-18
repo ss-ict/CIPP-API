@@ -27,14 +27,13 @@ function Invoke-CIPPStandardSPDirectSharing {
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
-        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/sharepoint-standards#medium-impact
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards
     #>
 
     param($Tenant, $Settings)
-    ##$Rerun -Type Standard -Tenant $Tenant -Settings $Settings 'SPDirectSharing'
 
     $CurrentState = Get-CIPPSPOTenant -TenantFilter $Tenant |
-    Select-Object -Property DefaultSharingLinkType
+        Select-Object -Property DefaultSharingLinkType
 
     $StateIsCorrect = ($CurrentState.DefaultSharingLinkType -eq 'Direct' -or $CurrentState.DefaultSharingLinkType -eq 1)
 
@@ -66,5 +65,12 @@ function Invoke-CIPPStandardSPDirectSharing {
 
     if ($Settings.report -eq $true) {
         Add-CIPPBPAField -FieldName 'DirectSharing' -FieldValue $StateIsCorrect -StoreAs bool -Tenant $tenant
+
+        if ($StateIsCorrect) {
+            $FieldValue = $true
+        } else {
+            $FieldValue = $CurrentState
+        }
+        Set-CIPPStandardsCompareField -FieldName 'standards.SPDirectSharing' -FieldValue $FieldValue -Tenant $Tenant
     }
 }

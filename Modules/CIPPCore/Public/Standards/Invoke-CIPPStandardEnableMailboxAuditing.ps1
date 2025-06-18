@@ -28,7 +28,7 @@ function Invoke-CIPPStandardEnableMailboxAuditing {
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
-        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/exchange-standards#low-impact
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards
     #>
 
     param($Tenant, $Settings)
@@ -109,7 +109,8 @@ function Invoke-CIPPStandardEnableMailboxAuditing {
 
     if ($Settings.alert -eq $true) {
         if ($AuditState) {
-            Write-LogMessage -API 'Standards' -tenant $Tenant -message 'Tenant level mailbox audit is not enabled' -sev Alert
+            Write-StandardsAlert -message 'Tenant level mailbox audit is not enabled' -object $AuditState -tenant $Tenant -standardName 'EnableMailboxAuditing' -standardId $Settings.standardId
+            Write-LogMessage -API 'Standards' -tenant $Tenant -message 'Tenant level mailbox audit is not enabled' -sev Info
         } else {
             Write-LogMessage -API 'Standards' -tenant $Tenant -message 'Tenant level mailbox audit is enabled' -sev Info
         }
@@ -117,6 +118,7 @@ function Invoke-CIPPStandardEnableMailboxAuditing {
 
     if ($Settings.report -eq $true) {
         $AuditState = -not $AuditState
+        Set-CIPPStandardsCompareField -FieldName 'standards.EnableMailboxAuditing' -FieldValue $AuditState -Tenant $Tenant
         Add-CIPPBPAField -FieldName 'MailboxAuditingEnabled' -FieldValue $AuditState -StoreAs bool -Tenant $Tenant
     }
 

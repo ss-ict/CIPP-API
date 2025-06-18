@@ -15,7 +15,7 @@ function Invoke-CIPPStandardSafeSendersDisable {
         TAG
         ADDEDCOMPONENT
         DISABLEDFEATURES
-            
+            {"report":true,"warn":true,"remediate":false}
         IMPACT
             Medium Impact
         ADDEDDATE
@@ -27,13 +27,12 @@ function Invoke-CIPPStandardSafeSendersDisable {
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
-        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/exchange-standards#medium-impact
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards
     #>
 
     param($Tenant, $Settings)
-    ##$Rerun -Type Standard -Tenant $Tenant -Settings $Settings 'SafeSendersDisable'
 
-    If ($Settings.remediate -eq $true) {
+    if ($Settings.remediate -eq $true) {
         try {
             $Mailboxes = New-ExoRequest -tenantid $Tenant -cmdlet 'Get-Mailbox' -select 'UserPrincipalName'
             $Request = $Mailboxes | ForEach-Object {

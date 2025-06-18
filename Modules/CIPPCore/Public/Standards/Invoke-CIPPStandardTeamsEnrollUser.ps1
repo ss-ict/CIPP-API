@@ -1,4 +1,4 @@
-Function Invoke-CIPPStandardTeamsEnrollUser {
+function Invoke-CIPPStandardTeamsEnrollUser {
     <#
     .FUNCTIONALITY
         Internal
@@ -25,7 +25,7 @@ Function Invoke-CIPPStandardTeamsEnrollUser {
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
-        https://docs.cipp.app/user-documentation/tenant/standards/list-standards/teams-standards#low-impact
+        https://docs.cipp.app/user-documentation/tenant/standards/list-standards
     #>
 
     param($Tenant, $Settings)
@@ -33,8 +33,7 @@ Function Invoke-CIPPStandardTeamsEnrollUser {
     # Get EnrollUserOverride value using null-coalescing operator
     $enrollUserOverride = $Settings.EnrollUserOverride.value ?? $Settings.EnrollUserOverride
 
-    $CurrentState = New-TeamsRequest -TenantFilter $Tenant -Cmdlet 'Get-CsTeamsMeetingPolicy' -cmdParams @{Identity = 'Global' }
-    | Select-Object EnrollUserOverride
+    $CurrentState = New-TeamsRequest -TenantFilter $Tenant -Cmdlet 'Get-CsTeamsMeetingPolicy' -cmdParams @{Identity = 'Global' } | Select-Object EnrollUserOverride
 
     $StateIsCorrect = ($CurrentState.EnrollUserOverride -eq $enrollUserOverride)
 
@@ -61,11 +60,19 @@ Function Invoke-CIPPStandardTeamsEnrollUser {
         if ($StateIsCorrect -eq $true) {
             Write-LogMessage -API 'Standards' -tenant $Tenant -message 'Teams Enroll User Override settings is set correctly.' -sev Info
         } else {
-            Write-LogMessage -API 'Standards' -tenant $Tenant -message 'Teams Enroll User Override settings is not set correctly.' -sev Alert
+            Write-StandardsAlert -message 'Teams Enroll User Override settings is not set correctly.' -object $CurrentState -tenant $Tenant -standardName 'TeamsEnrollUser' -standardId $Settings.standardId
+            Write-LogMessage -API 'Standards' -tenant $Tenant -message 'Teams Enroll User Override settings is not set correctly.' -sev Info
         }
     }
 
     if ($Settings.report -eq $true) {
         Add-CIPPBPAField -FieldName 'TeamsEnrollUser' -FieldValue $StateIsCorrect -StoreAs bool -Tenant $Tenant
+
+        if ($StateIsCorrect) {
+            $FieldValue = $true
+        } else {
+            $FieldValue = $CurrentState
+        }
+        Set-CIPPStandardsCompareField -FieldName 'standards.TeamsEnrollUser' -FieldValue $FieldValue -Tenant $Tenant
     }
 }
