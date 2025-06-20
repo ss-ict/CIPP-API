@@ -1,6 +1,6 @@
 using namespace System.Net
 
-Function Invoke-ListTeamsVoice {
+function Invoke-ListTeamsVoice {
     <#
     .FUNCTIONALITY
         Entrypoint
@@ -18,37 +18,19 @@ Function Invoke-ListTeamsVoice {
     $TenantFilter = $Request.Query.tenantFilter
     $TenantId = (Get-Tenants | Where-Object -Property defaultDomainName -EQ $TenantFilter).customerId
     try {
-        $Users = (New-GraphGetRequest -uri "https://graph.microsoft.com/beta/users?`$top=999&`$select=id,userPrincipalName,displayName" -tenantid $TenantId)
+        $Users = (New-GraphGetRequest -uri "https://graph.microsoft.com/beta/users?`$top=999&`$select=id,userPrincipalName,displayName" -tenantid $TenantFilter)
         $Skip = 0
         $GraphRequest = do {
             Write-Host "Getting page $Skip"
-            $data = (New-TeamsAPIGetRequest -uri "https://api.interfaces.records.teams.microsoft.com/Skype.TelephoneNumberMgmt/Tenants/$($TenantId)/telephone-numbers?skip=$($Skip)&locale=en-US&top=999" -tenantid $TenantId).TelephoneNumbers | ForEach-Object {
+            $data = (New-TeamsAPIGetRequest -uri "https://api.interfaces.records.teams.microsoft.com/Skype.TelephoneNumberMgmt/Tenants/$($TenantId)/telephone-numbers?skip=$($Skip)&locale=en-US&top=999" -tenantid $TenantFilter).TelephoneNumbers | ForEach-Object {
                 Write-Host 'Reached the loop'
-
-                # Create the base object
-                $CompleteRequest = $_ | Select-Object *
-
-                # Handle AssignedTo property
-                if ($_.TargetType -EQ "User" -and $_.TargetId) {
-                    $CurrentTarget = $_.TargetId
-                    $MatchedUser = $Users | Where-Object { $_.id -EQ $CurrentTarget }
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue $MatchedUser.userPrincipalName -Force
-                } elseif ($_.TargetType -EQ "ResourceAccount" -and $_.TargetId) {
-                    $CurrentTarget = $_.TargetId
-                    $MatchedResource = $Users | Where-Object { $_.id -EQ $CurrentTarget }
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue $MatchedResource.displayName -Force
-                }
-                if ($CompleteRequest.AssignedTo -EQ $null) {
-                    $CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force
-                }
-
-                # Handle AcquisitionDate property
+                $CompleteRequest = $_ | Select-Object *, @{Name = 'AssignedTo'; Expression = { $users | Where-Object -Property id -EQ $_.TargetId } }
                 if ($CompleteRequest.AcquisitionDate) {
                     $CompleteRequest.AcquisitionDate = $_.AcquisitionDate -split 'T' | Select-Object -First 1
                 } else {
                     $CompleteRequest | Add-Member -NotePropertyName 'AcquisitionDate' -NotePropertyValue 'Unknown' -Force
                 }
-
+                $CompleteRequest.AssignedTo ? $null : ($CompleteRequest | Add-Member -NotePropertyName 'AssignedTo' -NotePropertyValue 'Unassigned' -Force)
                 $CompleteRequest
             }
             Write-Host 'Finished the loop'
